@@ -34,5 +34,6 @@ test=np.round(q.expect(H,opt),10)
 
 if test==0:
     print("The optimal sensitivity is:",Fopt)
+    print('The optimal state is:',opt )
 else:
     print('This procedure is not optimum')
