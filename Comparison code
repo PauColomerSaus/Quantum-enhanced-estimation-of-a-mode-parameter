@@ -1,0 +1,65 @@
+import qutip as q
+import numpy as np
+import matplotlib.pyplot as plt
+
+alpha=0
+cte=1.0j/np.sqrt(2)*np.exp(1j*alpha)
+d1=2
+d2=6
+
+x=np.linspace(2,20,19)
+
+dataan=[]
+datamax=[]
+
+#Evaluate the sensitivity for different numbers of photons
+for N in range(2,21):
+    
+    #This creates our hamiltonian
+    H=0*q.num(N+1) 
+    for k in range(N):
+        h=(np.sqrt((k+1)*(N-k))*(cte*q.basis(N+1,k+1)*q.basis(N+1,k).dag()+
+            np.conj(cte)*q.basis(N+1,k)*q.basis(N+1,k+1).dag()))
+        H=H+h
+    san=((H.eigenstates()[1])[0]+(H.eigenstates()[1])[N]).unit()
+        
+    #This adds the linear terms
+    Nd=d2*q.num(N+1)
+    for k in range(N):
+        Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+        Nd=Nd1+Nd
+    
+    #The quasi-optimum sensitivity
+    Fan=4*q.expect(H**2,san)-4*q.expect(H,san)**2+q.expect(Nd,san)    
+    dataan.append(Fan)
+    
+    #The optimum sensitivity
+    S=4*H**2+Nd
+    smax=(S.eigenstates()[1])[N] 
+    Fmax=4*q.expect(H**2,smax)-4*q.expect(H,smax)**2+q.expect(Nd,smax)
+    datamax.append(Fmax)
+
+#Plot both sensitivities
+plt.plot(x,datamax,label='Optimum sensitivity',linestyle='--')
+plt.plot(x,dataan,label='Quasi-optimum sensitivity',linestyle='--')
+plt.plot(x,datamax,'ro',color='blue',markersize=5)
+plt.plot(x,dataan,'ro',color='orange',markersize=5)
+plt.ylabel('Sensitivity')
+plt.xlabel('Number of photons')
+#Set a range so that the difference is visible
+plt.xlim(2,5.1)
+plt.xticks(np.arange(2,6,step=1))
+plt.ylim(15,75)
+plt.legend()
+plt.show()
+
+#Plot the difference
+y=np.subtract(datamax,dataan)
+plt.plot(x,y,'ro',color='blue', markersize=5)
+plt.plot(x,y)
+plt.xlim(2,20.1)
+plt.ylim(0.4,1.8)
+plt.xticks(np.arange(2,21,step=2))
+plt.xlabel("Number of photons")
+plt.ylabel("Sensitivity difference")
+plt.show()
