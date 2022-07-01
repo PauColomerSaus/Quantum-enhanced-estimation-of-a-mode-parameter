@@ -1,0 +1,67 @@
+import qutip as q
+import numpy as np
+
+#Set the number of photons
+N=15
+
+#The dimension of the Schwinger-space
+Nb=N/2
+
+#set angle of radial displacement(if needed)
+alpha=0
+
+#set constants
+cte=1.0j/np.sqrt(2)*np.exp(1j*alpha)
+d1=2
+d2=6
+
+#Schwinger representation
+#Generate H as a Jn
+H=2*(q.operators.jmat(Nb,'x')*cte.real-
+          q.operators.jmat(Nb,'y')*cte.imag)
+
+#An orthogonal direction to both Jz and Jn
+Jm=2*(q.operators.jmat(Nb,'x')*np.cos(alpha)-
+          q.operators.jmat(Nb,'y')*np.sin(alpha))
+
+#A rotation around Jm brings Jz to Jn
+angle=np.pi/2
+R=-1j*angle/2*Jm
+U=R.expm()
+
+#This has to be equal to H
+test=np.sqrt(2)*(U.dag()*q.operators.jmat(Nb,'z')*U)
+
+#The quasi-optimum state is
+optz=1/np.sqrt(2)*(q.basis(N+1,0)+1j*q.basis(N+1,N))
+opt=U*optz
+
+#Diagonalitzation prcedure
+#Generate the Hamiltonian
+H=0*q.num(N+1) 
+for k in range(N):
+    h=(np.sqrt((k+1)*(N-k))*(cte*q.basis(N+1,k+1)*q.basis(N+1,k).dag()+
+        np.conj(cte)*q.basis(N+1,k)*q.basis(N+1,k+1).dag()))
+    H=H+h
+
+#This are the linear terms
+Nd=d2*q.num(N+1)
+for k in range(N):
+    Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+    Nd=Nd1+Nd
+
+#The quasi-optimum state is
+opth=((H.eigenstates()[1])[0]+(H.eigenstates()[1])[N]).unit()
+
+#The quasi-optimum sensitivities for the two procedures are
+Fschw=4*q.expect(H**2,opt)-4*q.expect(H,opt)**2+q.expect(Nd,opt)
+Fdiag=4*q.expect(H**2,opth)-4*q.expect(H,opth)**2+q.expect(Nd,opth)
+
+Fcheckschw=np.round(Fschw,10)
+Fcheckdiag=np.round(Fdiag,10)
+
+if Fcheckschw==Fcheckdiag:
+    print('The two procedures get us equivalent quasi-optimum states')
+    print('The achieved sensitivity is:',Fcheckdiag)
+else:
+    print('We do not get the equivalent states')
