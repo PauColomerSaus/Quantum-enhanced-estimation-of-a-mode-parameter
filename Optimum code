@@ -1,0 +1,38 @@
+import qutip as q
+import numpy as np
+
+N=5
+Nb=N/2
+alpha=0
+cte=1.0j/np.sqrt(2)*np.exp(1j*alpha)
+d1=2
+d2=6
+
+#Generate the Hamiltonian with Schwinger
+H=2*(q.operators.jmat(Nb,'x')*cte.real-
+          q.operators.jmat(Nb,'y')*cte.imag)
+Jm=2*(q.operators.jmat(Nb,'x')*np.cos(alpha)-
+          q.operators.jmat(Nb,'y')*np.sin(alpha))
+angle=np.pi/2
+R=-1j*angle/2*Jm
+U=R.expm()
+H=np.sqrt(2)*(U.dag()*q.operators.jmat(Nb,'z')*U)
+        
+#This is the linear part
+Nd=d2*q.num(N+1)
+for k in range(N):
+    Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+    Nd=Nd1+Nd
+    
+#The sensitivity is
+S=4*H**2+Nd
+
+#The eigenvector corresponding to the maximum eigenvalue is
+opt=(S.eigenstates()[1])[N] 
+Fopt=4*q.expect(H**2,opt)-4*q.expect(H,opt)**2+q.expect(Nd,opt)
+test=np.round(q.expect(H,opt),10)
+
+if test==0:
+    print("The optimal sensitivity is:",Fopt)
+else:
+    print('This procedure is not optimum')
