@@ -1,0 +1,82 @@
+import qutip as q
+import numpy as np
+import matplotlib.pyplot as plt
+
+alpha=0
+cte=1.0j/np.sqrt(2)*np.exp(1j*alpha)
+d1=2
+d2=6
+x=np.linspace(2,10,9)
+x3=np.linspace(4,10,7)
+x4=np.linspace(6,10,5)
+x5=np.linspace(8,10,3)
+datanoon=[]
+N2=[]
+N3=[]
+N4=[]
+N5=[]
+
+for N in range(2,11):
+
+    Nb=N/2
+
+    #This generates our Hamiltonian
+    H=0*q.num(N+1) 
+    for k in range(N):
+        h=(np.sqrt((k+1)*(N-k))*(cte*q.basis(N+1,k+1)*q.basis(N+1,k).dag()+
+            np.conj(cte)*q.basis(N+1,k)*q.basis(N+1,k+1).dag()))
+        H=H+h
+            
+    #This adds the d1 d2 terms
+    Nd=d2*q.num(N+1)
+    for k in range(N):
+        Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+        Nd=Nd1+Nd
+            
+    #The optimum state in Jn
+    S=4*H**2+Nd
+    smax=(S.eigenstates()[1])[N] 
+    Fmax=4*q.expect(H**2,smax)-4*q.expect(H,smax)**2+q.expect(Nd,smax)
+
+    #An orthogonal direction to both Jz and Jn
+    Jm=2*(q.operators.jmat(Nb,'x')*np.cos(alpha)-
+          q.operators.jmat(Nb,'y')*np.sin(alpha))
+
+    #A rotation around Jm brings Jz to Jn
+    angle=np.pi/2
+    R=-1j*angle/2*Jm
+    U=R.expm()
+
+    #optimumstate in z direction
+    optH=U.dag()*smax
+    
+    datanoon.append((np.sqrt(2)*np.absolute(optH[0])[0][0])**2)
+    N2.append((np.sqrt(2)*np.absolute(optH[1])[0][0])**2)
+    #Terciary NOON appears for N>=4
+    if N>3:
+        N3.append((np.sqrt(2)*np.absolute(optH[2])[0][0])**2)
+    #Quaternary NOON appears for N>=6
+    if N>5:
+        N4.append((np.sqrt(2)*np.absolute(optH[3])[0][0])**2)
+    #Quinary NOON appears for N>=8
+    if N>7:
+        N5.append((np.sqrt(2)*np.absolute(optH[4])[0][0])**2)
+    
+#Plot all NOONs
+plt.plot(x,datanoon,linestyle='--',label='NOON state')
+plt.plot(x,datanoon,'ro',color='blue',markersize=5,)
+plt.plot(x,N2,linestyle='--',label='Secondary NOON')
+plt.plot(x,N2,'ro',color='orange',markersize=5)
+plt.plot(x3,N3,linestyle='--',label='Tertiary NOON')
+plt.plot(x3,N3,'ro',color='green',markersize=5,)
+plt.plot(x4,N4,linestyle='--',label='Quaternary NOON')
+plt.plot(x4,N4,'ro',color='red',markersize=5,)
+plt.plot(x5,N5,linestyle='--', label='Quinary NOON')
+plt.plot(x5,N5,'ro',color='purple',markersize=5,)
+#Set axis limits if you want to zoom in
+#plt.xlim(4,8.1)
+#plt.ylim(0,0.03)
+plt.legend()
+plt.xlabel('Number of photons')
+plt.ylabel('Population')
+plt.show()
