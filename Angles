@@ -1,0 +1,86 @@
+import qutip as q
+import numpy as np
+import matplotlib.pyplot as plt
+
+dataHG=[]
+dataLG=[]
+x=np.linspace(2,15,13)
+angles=np.linspace(0,2*np.pi,400)
+theta = np.arange(0, 2*np.pi+np.pi/4, step=(np.pi/4))
+
+N=5
+
+for alpha in angles:
+    cte=1.0j*np.cos(alpha)
+    d1=4*np.sin(alpha)
+    d2=4*(1+np.cos(alpha)**2) 
+        
+    #This creates our hamiltonian
+    H=0*q.num(N+1)
+    for k in range(N):
+        h=(np.sqrt((k+1)*(N-k))*(cte*q.basis(N+1,k+1)*q.basis(N+1,k).dag()+
+            np.conj(cte)*q.basis(N+1,k)*q.basis(N+1,k+1).dag()))
+        H=H+h
+        
+    #This adds the d1 d2 terms
+    Nd=d2*q.num(N+1)
+    for k in range(N):
+        Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+        Nd=Nd1+Nd
+    
+    #The best one is the maximum eigenvalue of the operator:
+    S=4*H**2+Nd
+    lmax=(S.eigenstates()[0])[N]
+    smax=(S.eigenstates()[1])[N] 
+    Fmax=4*q.expect(H**2,smax)-4*q.expect(H,smax)**2+q.expect(Nd,smax)
+
+    dataHG.append(Fmax)
+    
+    
+    #And for LG...
+    cte=1.0j/np.sqrt(2)*np.exp(1j*alpha)
+    d1=2
+    d2=6
+        
+    #This creates our hamiltonian
+    H=0*q.num(N+1) 
+    for k in range(N):
+        h=(np.sqrt((k+1)*(N-k))*(cte*q.basis(N+1,k+1)*q.basis(N+1,k).dag()+
+            np.conj(cte)*q.basis(N+1,k)*q.basis(N+1,k+1).dag()))
+        H=H+h
+        
+    #This adds the d1 d2 terms
+    Nd=d2*q.num(N+1)
+    for k in range(N):
+        Nd1=d1*(N-k)*q.basis(N+1,k)*q.basis(N+1,k).dag()
+        Nd=Nd1+Nd
+    
+    #The best one is the maximum eigenvalue of the operator:
+    S=4*H**2+Nd
+    lmax=(S.eigenstates()[0])[N]
+    smax=(S.eigenstates()[1])[N] 
+    Fmax=4*q.expect(H**2,smax)-4*q.expect(H,smax)**2+q.expect(Nd,smax)
+
+    dataLG.append(Fmax)
+
+#plot figure
+plt.plot(angles,dataHG,label='HG sensitivity')
+plt.plot(angles,dataLG,label='LG sensitivity')
+plt.xticks(theta, ['0', 'π/4', 'π/2', '3π/4', 'π', '5π/4', '3π/2', '7π/4', '2π'])
+plt.margins(x=0)
+plt.legend()
+plt.xlabel('Displacement angle')
+plt.ylabel('Sensitivity $\cdot w_0^2$')
+plt.show()
+
+#calculate the average
+avLG=np.average(dataLG)
+avHG=np.average(dataHG)
+
+#compare the averages
+if avLG>avHG:
+    print('Laguerre modes give a better sensitivity on average')
+if avLG==avHG:
+    print('Laguerre and Hermite modes give the same sensitivity on average')
+if avLG<avHG:
+    print('Hermite modes give better sensitivity on average')
