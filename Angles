@@ -79,8 +79,10 @@ avHG=np.average(dataHG)
 
 #compare the averages
 if avLG>avHG:
-    print('Laguerre modes give a better sensitivity on average')
+    print('Laguerre modes give a',np.round((avLG-avHG)*100/(avLG),3) ,
+          '% better sensitivity on average')
 if avLG==avHG:
     print('Laguerre and Hermite modes give the same sensitivity on average')
 if avLG<avHG:
-    print('Hermite modes give better sensitivity on average')
+    print('Hermite modes give a ',np.round((-avLG+avHG)*100/(avLG),3) ,
+          '%better sensitivity on average')
