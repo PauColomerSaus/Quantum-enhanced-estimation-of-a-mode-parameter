@@ -1,0 +1,36 @@
+import qutip as q
+import numpy as np
+import matplotlib.pyplot as plt
+
+a=1
+b=2
+
+dataqF=[]
+dataF=[]
+x=np.linspace(2,6,5)
+
+for N in range(2,7):
+    #Calculate the sensitivity with a random state
+    check=0
+    numoptstate=q.basis(N+1,0)
+    for k in range(100000):
+        state=q.rand_ket(N+1).unit()
+        F=a*q.variance(q.num(N+1),state)+b*q.expect(q.num(N+1),state)
+        if F>check:
+            check=F
+            numoptstate=state
+    dataF.append(F)
+    
+    #the sensitivity with the NOON
+    NOON=(q.basis(N+1,0)+q.basis(N+1,N)).unit()
+    qF=a*q.variance(q.num(N+1),NOON)+b*q.expect(q.num(N+1),NOON)
+    dataqF.append(qF)
+
+plt.plot(x,dataF,label='Best out of 100000 random',linestyle='--')
+plt.plot(x,dataqF,label='Quasi-optimum sensitivity',linestyle='--')
+plt.plot(x,dataF,'ro',markersize=5, color='blue')
+plt.plot(x,dataqF,'ro',markersize=5, color='orange')
+plt.legend()
+plt.xlabel('Number of photons')
+plt.ylabel('Normalized sensitivity')
+plt.show()
