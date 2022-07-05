@@ -12,7 +12,7 @@ N=5
 
 for alpha in angles:
     cte=1.0j*np.cos(alpha)
-    d1=4*np.sin(alpha)
+    d1=4*np.sin(alpha)**2
     d2=4*(1+np.cos(alpha)**2) 
         
     #This creates our hamiltonian
@@ -74,15 +74,15 @@ plt.ylabel('Sensitivity $\cdot w_0^2$')
 plt.show()
 
 #calculate the average
-avLG=np.average(dataLG)
-avHG=np.average(dataHG)
+avLG=np.round(np.average(dataLG))
+avHG=np.round(np.average(dataHG))
 
 #compare the averages
 if avLG>avHG:
-    print('Laguerre modes give a',np.round((avLG-avHG)*100/(avLG),3) ,
+    print('Laguerre modes give a',(avLG-avHG)*100/(avLG) ,
           '% better sensitivity on average')
 if avLG==avHG:
     print('Laguerre and Hermite modes give the same sensitivity on average')
 if avLG<avHG:
-    print('Hermite modes give a ',np.round((-avLG+avHG)*100/(avLG),3) ,
+    print('Hermite modes give a ',(-avLG+avHG)*100/(avLG) ,
           '%better sensitivity on average')
