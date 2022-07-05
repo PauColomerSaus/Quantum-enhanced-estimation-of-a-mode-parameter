@@ -37,3 +37,21 @@ if test==0:
     print('The optimal state is:',opt )
 else:
     print('This procedure is not optimum')
+
+#The symmetric logarithmic derivative
+rho=opt*opt.dag()
+L=2j*q.commutator(rho,H)
+
+#The POVM elements 
+POVM=[]
+idcheck=0
+for k in range(N+1):
+   E= ((L.eigenstates()[1])[k])*((L.eigenstates()[1])[k]).dag()
+   POVM.append(E)
+   
+   #Check it is a POVM
+   idcheck=idcheck+E
+   if idcheck == q.identity(N+1):
+       print("The optimum POVM has elements")
+       
+print(POVM)
