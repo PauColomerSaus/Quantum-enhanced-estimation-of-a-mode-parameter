@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy
+
+#set maximum indices
+p = 0;                  
+l = 1;                  
+w0 = 2.0;               # Arbitrary eam waist
+k = 2*np.pi/532.0e-9;   # Arbitrary avenumber of light
+zR = k*w0**2.0/2;       # Calculate the Rayleigh range
+
+# Setup the cartesian grid for the plot at plane z
+z = 0.0;
+xx, yy = np.meshgrid(np.linspace(-5, 5), np.linspace(-5, 5));
+
+# Calculate the cylindrical coordinates
+r = np.sqrt(xx**2 + yy**2);
+phi = np.arctan2(yy, xx);
+
+U00 = 1.0/(1 + 1j*z/zR) * np.exp(-r**2.0/w0**2/(1 + 1j*z/zR));
+w = w0 * np.sqrt(1.0 + z**2/zR**2);
+R = np.sqrt(2.0)*r/w;
+
+UU=0                 #keep the loop to get the superposition
+for h in range(l+1): #start at 1 to get only the excited mode 
+                     #finish at range(l) to get the ground mode
+    
+    Lpl = scipy.special.comb(p+h,p) * np.ones(np.shape(R))
+    for m in range(1, p+1):
+        Lpl = (Lpl + (-1.0)**m/scipy.special.factorial(m) * 
+               scipy.special.comb(p+h,p-m) * R**(2.0*m))
+
+    U = (U00*R**h*Lpl*np.exp(1j*h*phi)*
+        np.exp(-1j*(2*p + h + 1)*np.arctan(z/zR)))
+    UU=UU+abs(U)**2
+
+plt.figure()
+plt.title('Intensity')
+plt.pcolor(UU)
+plt.axis('equal')
+
+plt.show()
