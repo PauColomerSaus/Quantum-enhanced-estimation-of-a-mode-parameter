@@ -1,0 +1,39 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+#set maximum indices
+n = 0                  
+m = 0            
+w0 = 2.0               # Arbitraryeam waist
+k = 2*np.pi/532.0e-9   # Arbitrary wavenumber of light
+
+zR = k*w0**2.0/2;      # Calculate the Rayleigh range
+
+# Setup the cartesian grid for the plot at plane z
+z = 0.0;
+[xx, yy] = np.meshgrid(np.linspace(-5, 5), np.linspace(-5, 5))
+
+def hermiteH(n, x):
+    if n == 0:
+        return 1;
+    elif n == 1:
+        return 2*x;
+    else:
+        return 2*x*hermiteH(n-1, x) - 2*(n - 1)*hermiteH(n - 2, x)
+
+U00 = 1.0/(1 + 1j*z/zR)*np.exp(-(xx**2 + yy**2)/w0**2/(1 + 1j*z/zR))
+Hn = hermiteH(n, xx)
+Hm = hermiteH(m, yy)
+Hm1= hermiteH(m+1, yy)
+Hn1= hermiteH(n+1, xx)
+
+U = U00*Hn*Hm*np.exp(-1j*(n + m)*np.arctan(z/zR))
+V = U00*Hn*Hm1*np.exp(-1j*(n + m+1)*np.arctan(z/zR))
+W = U00*Hn1*Hm*np.exp(-1j*(n+1 + m)*np.arctan(z/zR))
+
+plt.figure()
+plt.title('Intensity')
+plt.pcolor(abs(U)**2+abs(W)**2); #change W for V to get the superposition in y
+plt.axis('equal')
+
+plt.show()
