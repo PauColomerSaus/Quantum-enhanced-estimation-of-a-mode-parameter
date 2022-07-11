@@ -6,7 +6,7 @@ n = 0
 m = 0            
 w0 = 2.0               # Arbitraryeam waist
 k = 2*np.pi/532.0e-9   # Arbitrary wavenumber of light
-
+alpha=np.pi/4
 zR = k*w0**2.0/2;      # Calculate the Rayleigh range
 
 # Setup the cartesian grid for the plot at plane z
@@ -27,13 +27,13 @@ Hm = hermiteH(m, yy)
 Hm1= hermiteH(m+1, yy)
 Hn1= hermiteH(n+1, xx)
 
-U = U00*Hn*Hm*np.exp(-1j*(n + m)*np.arctan(z/zR))
-V = U00*Hn*Hm1*np.exp(-1j*(n + m+1)*np.arctan(z/zR))
-W = U00*Hn1*Hm*np.exp(-1j*(n+1 + m)*np.arctan(z/zR))
+U = U00*Hn*Hm*np.exp(-1j*(n + m)*np.arctan(z/zR))    #for HG00
+V = U00*Hn*Hm1*np.exp(-1j*(n + m+1)*np.arctan(z/zR)) #for HG01
+W = U00*Hn1*Hm*np.exp(-1j*(n+1 + m)*np.arctan(z/zR)) #for HG10
+X = np.cos(alpha)*V+np.sin(alpha)*W                  #for sin(a)HG10+cos(a)HG01
 
-plt.figure()
-plt.title('Intensity')
-plt.pcolor(abs(U)**2+abs(W)**2); #change W for V to get the superposition in y
+plt.figure()    
+plt.pcolor(abs(X)**2); #Change for V, W or X to see the corresponding plots
 plt.axis('equal')
 
 plt.show()
